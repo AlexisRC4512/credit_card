@@ -1,0 +1,392 @@
+openapi: 3.0.3
+info:
+  title: Credit Card Service
+  description: API to manage personal and business credit cards.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local server
+paths:
+  /api/v1/CreditCard:
+    get:
+      summary: Get all credit cards
+      operationId: getAllCards
+      responses:
+        '200':
+          description: List of credit cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCardResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new credit card
+      operationId: createCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardRequest'
+      responses:
+        '201':
+          description: Credit card created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/creditCard/{id_card}:
+    get:
+      summary: Get a credit card by ID
+      operationId: getCardById
+      parameters:
+        - name: id_card
+          in: path
+          required: true
+          description: Id of credit Card
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit card found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '404':
+          description: Credit card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update a credit card by ID
+      operationId: updateCard
+      parameters:
+        - name: id_card
+          in: path
+          required: true
+          description: Id of credit Card
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardRequest'
+      responses:
+        '200':
+          description: Credit card updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Credit card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a credit card by ID
+      operationId: deleteCard
+      parameters:
+        - name: id_card
+          in: path
+          description: Id of credit Card
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Credit card deleted
+        '404':
+          description: Credit card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/creditCard/{id_card}/charge:
+    post:
+      summary: Charge an expense to the credit card
+      operationId: chargeExpense
+      parameters:
+        - name: id_card
+          in: path
+          required: true
+          description: Id of credit Card
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseRequest'
+      responses:
+        '200':
+          description: Expense successfully charged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResponse'
+        '400':
+          description: Credit limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/creditCard/{id_card}/balances:
+    get:
+      summary: Get client balances
+      operationId: getClientBalances
+      parameters:
+        - name: id_card
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client balances
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '404':
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/creditCard/{id_card}/transactions:
+    get:
+      summary: Get client transactions
+      operationId: getClientTransactions
+      parameters:
+        - name: id_card
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '404':
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    CreditCard:
+      type: object
+      properties:
+        _id:
+          type: string
+        type:
+          type: string
+          enum: [personal, business]
+        creditLimit:
+          type: number
+        availableBalance:
+          type: number
+        issueDate:
+          type: string
+          format: date
+        expirationDate:
+          type: string
+          format: date
+        clientId:
+          type: string
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        balances:
+          type: object
+          properties:
+            clientId:
+              type: string
+            creditBalance:
+              type: number
+            date:
+              type: string
+              format: date
+    CreditCardRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [personal, business]
+        creditLimit:
+          type: number
+        availableBalance:
+          type: number
+        issueDate:
+          type: string
+          format: date
+        expirationDate:
+          type: string
+          format: date
+        clientId:
+          type: string
+      required:
+        - type
+        - creditLimit
+        - availableBalance
+        - issueDate
+        - expirationDate
+        - clientId
+    CreditCardResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+        type:
+          type: string
+          enum: [personal, business]
+        creditLimit:
+          type: number
+        availableBalance:
+          type: number
+        issueDate:
+          type: string
+          format: date
+        expirationDate:
+          type: string
+          format: date
+        clientId:
+          type: string
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    Transaction:
+      type: object
+      properties:
+        clientId:
+          type: string
+        type:
+          type: string
+          enum: [purchase, payment]
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+    ExpenseRequest:
+      type: object
+      properties:
+        clientId:
+          type: string
+        amount:
+          type: number
+        description:
+          type: string
+      required:
+        - amount
+        - description
+    ExpenseResponse:
+      type: object
+      properties:
+        clientId:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+    BalanceResponse:
+      type: object
+      properties:
+        clientId:
+          type: string
+        creditCardBalance:
+          type: number
+    TransactionResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
