@@ -1,28 +1,21 @@
 package com.nttdata.credit_card.service;
 
-import com.nttdata.credit_card.model.entity.Balances;
 import com.nttdata.credit_card.model.entity.CreditCard;
-import com.nttdata.credit_card.model.entity.Transaction;
-import com.nttdata.credit_card.model.enums.TransactionType;
 import com.nttdata.credit_card.model.enums.TypeCredit;
-import com.nttdata.credit_card.model.exception.CreditNotFoundException;
 import com.nttdata.credit_card.model.exception.InvalidCreditDataException;
 import com.nttdata.credit_card.model.request.CreditCardRequest;
 import com.nttdata.credit_card.repository.CreditCardRepository;
 import com.nttdata.credit_card.service.impl.CreditCardServiceImpl;
-import com.nttdata.credit_card.util.CreditCardConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -47,8 +40,8 @@ public class CreditCardServiceTest {
         calendar.set(Calendar.MONTH, Calendar.JANUARY);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         Date expirationDate = calendar.getTime();
-        creditCard = new CreditCard("1", TypeCredit.PERSONAL, 10000.0, 5000.0, new Date(), expirationDate, "12345", List.of(), new Balances());
-        creditCardRequest = new CreditCardRequest(TypeCredit.PERSONAL, 10000.0, 5000.0, new Date(), expirationDate, "12345",List.of(), new Balances());
+        creditCard = new CreditCard("1", TypeCredit.PERSONAL, 10000.0, 10000.0, new Date(), expirationDate, "12345", List.of());
+        creditCardRequest = new CreditCardRequest(TypeCredit.PERSONAL, 10000.0, 10000.0, new Date(), expirationDate, "12345",List.of());
     }
 
     @Test

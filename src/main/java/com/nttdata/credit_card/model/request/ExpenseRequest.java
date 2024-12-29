@@ -9,22 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ExpenseRequest {
 
-    private String clientId;
     private Double amount;
-    private String description;
 
     public ExpenseRequest(String clientId, Double amount, String description) {
-        setClientId(clientId);
         setAmount(amount);
-        setDescription(description);
     }
 
-    public void setClientId(String clientId) {
-        if (clientId == null || clientId.isEmpty()) {
-            throw new IllegalArgumentException("Client ID is required");
-        }
-        this.clientId = clientId;
-    }
 
     public void setAmount(Double amount) {
         if (amount == null || amount <= 0) {
@@ -37,6 +27,5 @@ public class ExpenseRequest {
         if (description == null || description.isEmpty()) {
             throw new IllegalArgumentException("Description is required");
         }
-        this.description = description;
     }
 }

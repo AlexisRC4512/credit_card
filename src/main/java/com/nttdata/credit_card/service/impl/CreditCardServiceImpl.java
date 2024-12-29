@@ -1,18 +1,27 @@
 package com.nttdata.credit_card.service.impl;
 
 import com.nttdata.credit_card.model.entity.CreditCard;
+import com.nttdata.credit_card.model.entity.Transaction;
+import com.nttdata.credit_card.model.enums.TransactionType;
 import com.nttdata.credit_card.model.exception.CreditNotFoundException;
 import com.nttdata.credit_card.model.exception.InvalidCreditDataException;
 import com.nttdata.credit_card.model.request.CreditCardRequest;
-import com.nttdata.credit_card.model.response.CreditCardResponse;
+import com.nttdata.credit_card.model.request.ExpenseRequest;
+import com.nttdata.credit_card.model.response.*;
 import com.nttdata.credit_card.service.CreditCardService;
 import com.nttdata.credit_card.repository.CreditCardRepository;
+import com.nttdata.credit_card.util.BalanceConverter;
 import com.nttdata.credit_card.util.CreditCardConverter;
+import com.nttdata.credit_card.util.ExpenseConverter;
+import com.nttdata.credit_card.util.TransactionConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Implementation of the credit card service.
@@ -105,5 +114,74 @@ public class CreditCardServiceImpl implements CreditCardService {
                 .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
                 .flatMap(existingClient -> creditCardRepository.delete(existingClient))
                 .onErrorMap(e -> new Exception("Error deleting Credit cards", e));
+    }
+
+    @Override
+    public Mono<ExpenseResponse> chargeByCardId(String id, ExpenseRequest expenseRequest) {
+        return creditCardRepository.findById(id)
+                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
+                .flatMap(creditCard -> {
+                    double newBalance = creditCard.getAvailableBalance() - expenseRequest.getAmount();
+                    if (newBalance < 0) {
+                        return Mono.error(new IllegalArgumentException("Insufficient available balance"));
+                    }
+                    Mono<Transaction> transactionMono = TransactionConverter.toTransactionExpense(expenseRequest, TransactionType.PURCHASE, "Charge to credit card");
+                    creditCard.setAvailableBalance(newBalance);
+                    return updateTransaction(transactionMono, creditCard)
+                            .then(creditCardRepository.save(creditCard))
+                            .then(Mono.just(ExpenseConverter.convertToResponse(expenseRequest)));
+                })
+                .doOnError(e -> log.error("Error charging credit card", e))
+                .onErrorMap(e -> new Exception("Error charging credit card", e));
+    }
+
+    @Override
+    public Mono<ExpenseResponse> paymentByCardId(String id, ExpenseRequest expenseRequest) {
+        return creditCardRepository.findById(id)
+                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
+                .flatMap(creditCard -> {
+                    double newBalance = creditCard.getAvailableBalance() + expenseRequest.getAmount();
+                    if (newBalance > creditCard.getCreditLimit()) {
+                        return Mono.error(new IllegalArgumentException("You can't go over the credit limit"));
+                    }
+                    Mono<Transaction> transactionMono = TransactionConverter.toTransactionExpense(expenseRequest, TransactionType.PAYMENT, "paymen to credit card");
+                    creditCard.setAvailableBalance(newBalance);
+                    return updateTransaction(transactionMono, creditCard)
+                            .then(creditCardRepository.save(creditCard))
+                            .then(Mono.just(ExpenseConverter.convertToResponse(expenseRequest)));
+                })
+                .doOnError(e -> log.error("Error paymen credit card", e))
+                .onErrorMap(e -> new Exception("Error paymen credit card", e));
+    }
+
+    @Override
+    public Flux<BalanceResponse> getBalanceByClientId(String idClient) {
+        return creditCardRepository.findByClientId(idClient)
+                .map(creditCard -> {
+                    if (creditCard == null) {
+                        throw new CreditNotFoundException("Credit card not found with id: " + idClient);
+                    }
+                    return BalanceConverter.toBalanceResponse(Collections.singletonList(creditCard));
+                })
+                .switchIfEmpty(Mono.error(new CreditNotFoundException("Account not found with id: " + idClient)))
+                .doOnError(e -> log.error("Error getting balance for Credit card", e))
+                .onErrorMap(e -> new Exception("Error getting balance for Credit card", e));
+    }
+    @Override
+    public Mono<TransactionCreditCardResponse> getTransactionByCreditCard(String idAccount) {
+        return creditCardRepository.findById(idAccount).map(TransactionConverter::toTransactionAccountResponse)
+                .switchIfEmpty(Mono.error(new CreditNotFoundException("account not found with id: " + idAccount)))
+                .doOnError(e -> log.error("Error fetching Credit card with id: {}", idAccount, e))
+                .onErrorMap(e -> new Exception("Error fetching Credit card by id", e));
+    }
+
+    private Mono<TransactionResponse> updateTransaction(Mono<Transaction> transactionMono, CreditCard creditCard) {
+        return transactionMono.flatMap(transactionToConverter -> {
+            if (creditCard.getTransactions() == null) {
+                creditCard.setTransactions(new ArrayList<>());
+            }
+            creditCard.getTransactions().add(transactionToConverter);
+            return TransactionConverter.toTransactionResponse(transactionToConverter);
+        });
     }
 }

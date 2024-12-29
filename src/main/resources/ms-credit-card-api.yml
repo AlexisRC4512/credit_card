@@ -186,12 +186,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/creditCard/{id_card}/balances:
+  /v1/creditCard/{id_client}/balances:
     get:
       summary: Get client balances
       operationId: getClientBalances
       parameters:
-        - name: id_card
+        - name: id_client
           in: path
           required: true
           schema:
@@ -270,16 +270,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
-        balances:
-          type: object
-          properties:
-            clientId:
-              type: string
-            creditBalance:
-              type: number
-            date:
-              type: string
-              format: date
+    Balance:
+      type: object
+      properties:
+        accountId:
+          type: string
+        balance:
+          type: number
+        date:
+          type: string
+          format: date
     CreditCardRequest:
       type: object
       properties:
@@ -347,15 +347,10 @@ components:
     ExpenseRequest:
       type: object
       properties:
-        clientId:
-          type: string
         amount:
           type: number
-        description:
-          type: string
       required:
         - amount
-        - description
     ExpenseResponse:
       type: object
       properties:
@@ -371,8 +366,10 @@ components:
       properties:
         clientId:
           type: string
-        creditCardBalance:
-          type: number
+        balances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Balance'
     TransactionResponse:
       type: object
       properties:

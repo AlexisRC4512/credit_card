@@ -1,6 +1,5 @@
 package com.nttdata.credit_card.model.response;
 
-import com.nttdata.credit_card.model.entity.Balances;
 import com.nttdata.credit_card.model.entity.Transaction;
 import com.nttdata.credit_card.model.enums.TypeCredit;
 import lombok.*;
@@ -21,5 +20,4 @@ public class CreditCardResponse {
     private Date expirationDate;
     private String clientId;
     private List<Transaction> transactions;
-    private Balances balances;
 }

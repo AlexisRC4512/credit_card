@@ -15,7 +15,6 @@ public class CreditCardConverter {
         creditCard.setExpirationDate(request.getExpirationDate());
         creditCard.setClientId(request.getClientId());
         creditCard.setTransactions(request.getTransactions());
-        creditCard.setBalances(request.getBalances());
         return creditCard;
     }
 
@@ -29,7 +28,6 @@ public class CreditCardConverter {
         response.setExpirationDate(creditCard.getExpirationDate());
         response.setClientId(creditCard.getClientId());
         response.setTransactions(creditCard.getTransactions());
-        response.setBalances(creditCard.getBalances());
         return response;
     }
 }

@@ -12,10 +12,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class Transaction {
-    /**
-     * Client ID associated with the transaction.
-     */
-    private String clientId;
 
     /**
      * Type of transaction.
