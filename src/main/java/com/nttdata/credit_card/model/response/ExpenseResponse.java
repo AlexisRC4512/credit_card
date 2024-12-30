@@ -9,7 +9,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class ExpenseResponse {
-    private String clientId;
     private double amount;
     private Date date;
 }

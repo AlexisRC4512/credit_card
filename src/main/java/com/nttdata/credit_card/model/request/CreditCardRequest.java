@@ -1,11 +1,9 @@
 package com.nttdata.credit_card.model.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.nttdata.credit_card.model.entity.Balances;
 import com.nttdata.credit_card.model.entity.Transaction;
 import com.nttdata.credit_card.model.enums.TypeCredit;
 import com.nttdata.credit_card.util.CreditTypeDeserializer;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,8 +22,8 @@ public class CreditCardRequest {
     private Date expirationDate;
     private String clientId;
     private List<Transaction> transactions;
-    private Balances balances;
-    public CreditCardRequest(TypeCredit type, Double creditLimit, Double availableBalance, Date issueDate, Date expirationDate, String clientId ,List<Transaction> transactions, Balances balances) {
+
+    public CreditCardRequest(TypeCredit type, Double creditLimit, Double availableBalance, Date issueDate, Date expirationDate, String clientId ,List<Transaction> transactions) {
        setType(type);
         setCreditLimit(creditLimit);
         setAvailableBalance(availableBalance);
@@ -33,16 +31,12 @@ public class CreditCardRequest {
         setExpirationDate(expirationDate);
         setClientId(clientId);
         setTransactions(transactions);
-        setBalances(balances);
     }
 
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
     }
 
-    public void setBalances(Balances balances) {
-        this.balances = balances;
-    }
 
     public void setType(TypeCredit type) {
         if (type == null) {
@@ -59,7 +53,7 @@ public class CreditCardRequest {
     }
 
     public void setAvailableBalance(Double availableBalance) {
-        if (availableBalance == null || availableBalance < 0) {
+        if (availableBalance == null || availableBalance < 0 || availableBalance == getCreditLimit()) {
             throw new IllegalArgumentException("Available balance must be zero or positive");
         }
         this.availableBalance = availableBalance;

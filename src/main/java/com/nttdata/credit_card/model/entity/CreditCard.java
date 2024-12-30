@@ -59,8 +59,4 @@ public class CreditCard {
      */
     private List<Transaction> transactions;
 
-    /**
-     * Balance details of the credit card.
-     */
-    private Balances balances;
 }

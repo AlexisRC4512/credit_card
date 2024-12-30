@@ -1,6 +1,9 @@
 package com.nttdata.credit_card.model.response;
 
+import com.nttdata.credit_card.model.entity.Balance;
 import lombok.*;
+
+import java.util.List;
 
 
 @NoArgsConstructor
@@ -9,5 +12,5 @@ import lombok.*;
 @Setter
 public class BalanceResponse {
     private String clientId;
-    private double creditCardBalance;
+    private List<Balance> balances;
 }
