@@ -175,6 +175,15 @@ public class CreditCardServiceImpl implements CreditCardService {
                 .onErrorMap(e -> new Exception("Error fetching Credit card by id", e));
     }
 
+    @Override
+    public Flux<CreditCardResponse> getAllCreditCardByClientId(String clientId) {
+        return creditCardRepository.findByClientId(clientId).map(CreditCardConverter::toCreditCardResponse)
+                .switchIfEmpty(Mono.error(new CreditNotFoundException("account not found with client id: " + clientId)))
+                .doOnError(e -> log.error("Error fetching Credit card with client id: {}", clientId, e))
+                .onErrorMap(e -> new Exception("Error fetching Credit card by client id", e));
+
+    }
+
     private Mono<TransactionResponse> updateTransaction(Mono<Transaction> transactionMono, CreditCard creditCard) {
         return transactionMono.flatMap(transactionToConverter -> {
             if (creditCard.getTransactions() == null) {

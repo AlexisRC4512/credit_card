@@ -1,11 +1,9 @@
 package com.nttdata.credit_card.model.response;
 
-import com.nttdata.credit_card.model.entity.Transaction;
 import com.nttdata.credit_card.model.enums.TransactionType;
 import lombok.*;
-
 import java.util.Date;
-import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

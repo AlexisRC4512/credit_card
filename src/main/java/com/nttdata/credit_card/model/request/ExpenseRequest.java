@@ -1,6 +1,5 @@
 package com.nttdata.credit_card.model.request;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

@@ -23,8 +23,8 @@ public class CreditCardController {
     }
 
     @GetMapping("/{id_card}")
-    public Mono<CreditCardResponse> getCreditById(@PathVariable String id_card) {
-        return creditCardService.getCreditCardById(id_card);
+    public Mono<CreditCardResponse> getCreditById(@PathVariable String idCard) {
+        return creditCardService.getCreditCardById(idCard);
     }
 
     @PostMapping
@@ -33,30 +33,33 @@ public class CreditCardController {
     }
 
     @PutMapping("/{id_card}")
-    public Mono<CreditCardResponse> updateCredit(@PathVariable String id_card, @RequestBody CreditCardRequest creditCardRequest) {
-        return creditCardService.updateCreditCard(id_card, creditCardRequest);
+    public Mono<CreditCardResponse> updateCredit(@PathVariable String idCard, @RequestBody CreditCardRequest creditCardRequest) {
+        return creditCardService.updateCreditCard(idCard, creditCardRequest);
     }
 
     @DeleteMapping("/{id_card}")
-    public Mono<Void> deleteCredit(@PathVariable String id_card) {
-        return creditCardService.deleteCreditCard(id_card);
+    public Mono<Void> deleteCredit(@PathVariable String idCard) {
+        return creditCardService.deleteCreditCard(idCard);
     }
 
     @PostMapping("/{id_card}/charge")
-    public Mono<ExpenseResponse> createCredit(@PathVariable String id_card,@RequestBody ExpenseRequest expenseRequest) {
-        return creditCardService.chargeByCardId(id_card,expenseRequest);
+    public Mono<ExpenseResponse> createCredit(@PathVariable String idCard,@RequestBody ExpenseRequest expenseRequest) {
+        return creditCardService.chargeByCardId(idCard,expenseRequest);
     }
     @PostMapping("/{id_card}/payment")
-    public Mono<ExpenseResponse> createPayment(@PathVariable String id_card,@RequestBody ExpenseRequest expenseRequest) {
-        return creditCardService.paymentByCardId(id_card,expenseRequest);
+    public Mono<ExpenseResponse> createPayment(@PathVariable String idCard,@RequestBody ExpenseRequest expenseRequest) {
+        return creditCardService.paymentByCardId(idCard,expenseRequest);
     }
     @GetMapping("/{id_client}/balances")
-    public Flux<BalanceResponse> getBalanceAccount(@PathVariable("id_client") String idClient){
+    public Flux<BalanceResponse> getBalanceAccount(@PathVariable("id_client") String idClient) {
         return creditCardService.getBalanceByClientId(idClient);
     }
     @GetMapping("/{id_account}/transactions")
     public Mono<TransactionCreditCardResponse> getTransactionByAccountId(@PathVariable("id_account") String id) {
         return creditCardService.getTransactionByCreditCard(id);
-
+    }
+    @GetMapping("/{id_client}/client")
+    public Flux<CreditCardResponse> getAllCreditCardByClientId(@PathVariable("id_client") String idClient) {
+        return creditCardService.getAllCreditCardByClientId(idClient);
     }
 }

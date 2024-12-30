@@ -45,7 +45,7 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    void getAllCreditCards_success() {
+    void getAllCreditCardsSuccess() {
         when(creditCardRepository.findAll()).thenReturn(Flux.just(creditCard));
 
         StepVerifier.create(creditCardService.getAllCreditCards())
@@ -56,7 +56,7 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    public void testGetAllCreditCards_Error() {
+    public void testGetAllCreditCardsError() {
         when(creditCardRepository.findAll()).thenReturn(Flux.error(new RuntimeException("Database error")));
 
         StepVerifier.create(creditCardService.getAllCreditCards())
@@ -67,18 +67,18 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    public void testGetCreditCardById_Success() {
+    public void testGetCreditCardByIdSuccess() {
         when(creditCardRepository.findById(anyString())).thenReturn(Mono.just(creditCard));
 
         StepVerifier.create(creditCardService.getCreditCardById("1"))
-                .expectNextMatches(creditcardResponse -> creditcardResponse!=null)
+                .expectNextMatches(creditcardResponse -> creditcardResponse != null)
                 .verifyComplete();
 
         verify(creditCardRepository, times(1)).findById("1");
     }
 
     @Test
-    public void testGetCreditCardById_NotFound() {
+    public void testGetCreditCardByIdNotFound() {
         when(creditCardRepository.findById(anyString())).thenReturn(Mono.empty());
 
         StepVerifier.create(creditCardService.getCreditCardById("1"))
@@ -89,18 +89,18 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    public void testCreateNewCreditCard_Success() {
+    public void testCreateNewCreditCardSuccess() {
         when(creditCardRepository.save(any(CreditCard.class))).thenReturn(Mono.just(creditCard));
 
         StepVerifier.create(creditCardService.createNewCreditCard(creditCardRequest))
-                .expectNextMatches(creditcardResponse -> creditcardResponse!=null)
+                .expectNextMatches(creditcardResponse -> creditcardResponse != null)
                 .verifyComplete();
 
         verify(creditCardRepository, times(1)).save(any(CreditCard.class));
     }
 
     @Test
-    public void testCreateNewCreditCard_InvalidData() {
+    public void testCreateNewCreditCardInvalidData() {
         StepVerifier.create(creditCardService.createNewCreditCard(null))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidCreditDataException && throwable.getMessage().equals("Invalid Credit cards data"))
                 .verify();
@@ -109,12 +109,12 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    public void testUpdateCreditCard_Success() {
+    public void testUpdateCreditCardSuccess() {
         when(creditCardRepository.findById(anyString())).thenReturn(Mono.just(creditCard));
         when(creditCardRepository.save(any(CreditCard.class))).thenReturn(Mono.just(creditCard));
 
         StepVerifier.create(creditCardService.updateCreditCard("1", creditCardRequest))
-                .expectNextMatches(creditcardResponse -> creditcardResponse!=null)
+                .expectNextMatches(creditcardResponse -> creditcardResponse != null)
                 .verifyComplete();
 
         verify(creditCardRepository, times(1)).findById("1");
@@ -122,7 +122,7 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    public void testUpdateCreditCard_NotFound() {
+    public void testUpdateCreditCardNotFound() {
         when(creditCardRepository.findById(anyString())).thenReturn(Mono.empty());
 
         StepVerifier.create(creditCardService.updateCreditCard("1", creditCardRequest))
@@ -134,7 +134,7 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    public void testDeleteCreditCard_Success() {
+    public void testDeleteCreditCardSuccess() {
         when(creditCardRepository.findById(anyString())).thenReturn(Mono.just(creditCard));
         when(creditCardRepository.delete(any(CreditCard.class))).thenReturn(Mono.empty());
 
@@ -146,7 +146,7 @@ public class CreditCardServiceTest {
     }
 
     @Test
-    public void testDeleteCreditCard_NotFound() {
+    public void testDeleteCreditCardNotFound() {
         when(creditCardRepository.findById(anyString())).thenReturn(Mono.empty());
 
         StepVerifier.create(creditCardService.deleteCreditCard("1"))

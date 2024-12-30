@@ -53,7 +53,7 @@ public class CreditCardRequest {
     }
 
     public void setAvailableBalance(Double availableBalance) {
-        if (availableBalance == null || availableBalance < 0 || availableBalance==getCreditLimit()) {
+        if (availableBalance == null || availableBalance < 0 || availableBalance == getCreditLimit()) {
             throw new IllegalArgumentException("Available balance must be zero or positive");
         }
         this.availableBalance = availableBalance;
