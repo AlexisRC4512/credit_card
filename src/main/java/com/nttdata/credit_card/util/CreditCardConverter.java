@@ -5,9 +5,12 @@ import com.nttdata.credit_card.model.enums.TypeCredit;
 import com.nttdata.credit_card.model.request.CreditCardRequest;
 import com.nttdata.credit_card.model.response.CreditCardResponse;
 
+import java.util.UUID;
+
 public class CreditCardConverter {
     public static CreditCard toCreditCard(CreditCardRequest request) {
         CreditCard creditCard = new CreditCard();
+        creditCard.setId(UUID.randomUUID().toString());
         creditCard.setType(request.getType());
         creditCard.setCreditLimit(request.getCreditLimit());
         creditCard.setAvailableBalance(request.getAvailableBalance());
@@ -15,6 +18,7 @@ public class CreditCardConverter {
         creditCard.setExpirationDate(request.getExpirationDate());
         creditCard.setClientId(request.getClientId());
         creditCard.setTransactions(request.getTransactions());
+        creditCard.setNumberCreditCard(request.getNumberCreditCard());
         return creditCard;
     }
 
@@ -28,6 +32,7 @@ public class CreditCardConverter {
         response.setExpirationDate(creditCard.getExpirationDate());
         response.setClientId(creditCard.getClientId());
         response.setTransactions(creditCard.getTransactions());
+        creditCard.setNumberCreditCard(creditCard.getNumberCreditCard());
         return response;
     }
 }

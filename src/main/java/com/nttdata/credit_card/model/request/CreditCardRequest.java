@@ -22,8 +22,8 @@ public class CreditCardRequest {
     private Date expirationDate;
     private String clientId;
     private List<Transaction> transactions;
-
-    public CreditCardRequest(TypeCredit type, Double creditLimit, Double availableBalance, Date issueDate, Date expirationDate, String clientId ,List<Transaction> transactions) {
+    private Integer numberCreditCard;
+    public CreditCardRequest(TypeCredit type, Double creditLimit, Double availableBalance, Date issueDate, Date expirationDate, String clientId ,List<Transaction> transactions,Integer numberCreditCard) {
        setType(type);
         setCreditLimit(creditLimit);
         setAvailableBalance(availableBalance);
@@ -31,12 +31,19 @@ public class CreditCardRequest {
         setExpirationDate(expirationDate);
         setClientId(clientId);
         setTransactions(transactions);
+        setNumberCreditCard(numberCreditCard);
     }
 
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
     }
 
+    public void setNumberCreditCard(Integer numberCreditCard) {
+        if ( numberCreditCard.toString().length() < 8) {
+            throw new IllegalArgumentException("The credit card number must have at least 9 characters.");
+        }
+        this.numberCreditCard = numberCreditCard;
+    }
 
     public void setType(TypeCredit type) {
         if (type == null) {

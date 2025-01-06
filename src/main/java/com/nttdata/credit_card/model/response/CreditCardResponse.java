@@ -20,4 +20,5 @@ public class CreditCardResponse {
     private Date expirationDate;
     private String clientId;
     private List<Transaction> transactions;
+    private int numberCreditCard;
 }

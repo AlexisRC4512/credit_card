@@ -28,6 +28,13 @@ public class CreditCard {
      * Type of the credit card.
      */
     private TypeCredit type;
+    /**
+     * Unique Number credit Card
+     *
+     *
+     * */
+
+    private int numberCreditCard;
 
     /**
      * Credit limit of the credit card.
