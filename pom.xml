@@ -29,6 +29,11 @@
 	<properties>
 		<java.version>11</java.version>
 		<spring-cloud.version>2021.0.6</spring-cloud.version>
+		<sonar.host.url>http://localhost:9001</sonar.host.url>
+		<sonar.token>sqp_9e9dc23b24c9e0bb9ca16178797fc573578b32d6</sonar.token>
+		<sonar.projectKey>credit_card</sonar.projectKey>
+		<sonar.projectName>credit_card</sonar.projectName>
+		<sonar.exclusions>pom.xml</sonar.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -217,29 +222,11 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--<plugin>
-				<groupId>org.openapitools</groupId>
-				<artifactId>openapi-generator-maven-plugin</artifactId>
-				<version>5.1.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<inputSpec>${project.basedir}/src/main/resources/ms-credit-card-api.yml</inputSpec>
-							<generatorName>spring</generatorName>
-							<apiPackage>com.nttdata.credit_card.api</apiPackage>
-							<modelPackage>com.nttdata.credit_card.model</modelPackage>
-							<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
-							<configOptions>
-								<delegatePattern>true</delegatePattern>
-							</configOptions>
-							<enablePostProcessFile>true</enablePostProcessFile>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>-->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.8.0.2131</version>
+			</plugin>
 		</plugins>
 	</build>
 
