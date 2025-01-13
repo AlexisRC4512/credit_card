@@ -335,6 +335,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
+        numberCreditCard:
+          type: number
     Balance:
       type: object
       properties:
@@ -363,6 +365,12 @@ components:
           format: date
         clientId:
           type: string
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        numberCreditCard:
+          type: number
       required:
         - type
         - creditLimit
@@ -370,6 +378,7 @@ components:
         - issueDate
         - expirationDate
         - clientId
+        - numberCreditCard
     CreditCardResponse:
       type: object
       properties:
@@ -394,6 +403,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
+        numberCreditCard:
+          type: number
     Transaction:
       type: object
       properties:

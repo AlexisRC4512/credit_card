@@ -4,6 +4,8 @@ import com.nttdata.credit_card.model.entity.CreditCard;
 import com.nttdata.credit_card.model.enums.TypeCredit;
 import com.nttdata.credit_card.model.exception.InvalidCreditDataException;
 import com.nttdata.credit_card.model.request.CreditCardRequest;
+import com.nttdata.credit_card.model.request.ExpenseRequest;
+import com.nttdata.credit_card.model.response.ExpenseResponse;
 import com.nttdata.credit_card.repository.CreditCardRepository;
 import com.nttdata.credit_card.service.impl.CreditCardServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,8 +42,8 @@ public class CreditCardServiceTest {
         calendar.set(Calendar.MONTH, Calendar.JANUARY);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         Date expirationDate = calendar.getTime();
-        creditCard = new CreditCard("1", TypeCredit.PERSONAL, 10000.0, 10000.0, new Date(), expirationDate, "12345", List.of());
-        creditCardRequest = new CreditCardRequest(TypeCredit.PERSONAL, 10000.0, 10000.0, new Date(), expirationDate, "12345",List.of());
+        creditCard = new CreditCard("1", TypeCredit.PERSONAL,982392029, 10000.0, 10000.0, new Date(), expirationDate, "12345", List.of());
+        creditCardRequest = new CreditCardRequest(TypeCredit.PERSONAL, 10000.0, 10000.0, new Date(), expirationDate, "12345",List.of(),982392029);
     }
 
     @Test
@@ -155,5 +157,113 @@ public class CreditCardServiceTest {
 
         verify(creditCardRepository, times(1)).findById("1");
         verify(creditCardRepository, times(0)).delete(any(CreditCard.class));
+    }
+    @Test
+    void testChargeByCardIdSuccess() {
+        String cardId = "123";
+        ExpenseRequest expenseRequest = new ExpenseRequest("client1", 100.0, "Test charge");
+        CreditCard creditCard = new CreditCard();
+        creditCard.setAvailableBalance(200.0);
+
+        when(creditCardRepository.findById(cardId)).thenReturn(Mono.just(creditCard));
+        when(creditCardRepository.save(any(CreditCard.class))).thenReturn(Mono.just(creditCard));
+
+        Mono<ExpenseResponse> result = creditCardService.chargeByCardId(cardId, expenseRequest);
+
+        StepVerifier.create(result)
+                .expectNextMatches(response -> response.getAmount() == 100.0)
+                .verifyComplete();
+
+        verify(creditCardRepository).findById(cardId);
+        verify(creditCardRepository).save(any(CreditCard.class));
+    }
+
+    @Test
+    void testChargeByCardIdCreditNotFound() {
+        String cardId = "123";
+        ExpenseRequest expenseRequest = new ExpenseRequest("client1", 100.0, "Test charge");
+
+        when(creditCardRepository.findById(cardId)).thenReturn(Mono.empty());
+
+        Mono<ExpenseResponse> result = creditCardService.chargeByCardId(cardId, expenseRequest);
+
+        StepVerifier.create(result)
+                .expectError(Exception.class)
+                .verify();
+
+        verify(creditCardRepository).findById(cardId);
+    }
+
+    @Test
+    void testChargeByCardIdInsufficientBalance() {
+        String cardId = "123";
+        ExpenseRequest expenseRequest = new ExpenseRequest("client1", 300.0, "Test charge");
+        CreditCard creditCard = new CreditCard();
+        creditCard.setAvailableBalance(200.0);
+
+        when(creditCardRepository.findById(cardId)).thenReturn(Mono.just(creditCard));
+
+        Mono<ExpenseResponse> result = creditCardService.chargeByCardId(cardId, expenseRequest);
+
+        StepVerifier.create(result)
+                .expectError(Exception.class)
+                .verify();
+
+        verify(creditCardRepository).findById(cardId);
+    }
+    @Test
+    void testPaymentByCardIdSuccess() {
+        String cardId = "123";
+        ExpenseRequest expenseRequest = new ExpenseRequest("client1", 100.0, "Test payment");
+        CreditCard creditCard = new CreditCard();
+        creditCard.setAvailableBalance(200.0);
+        creditCard.setCreditLimit(500.0);
+
+        when(creditCardRepository.findById(cardId)).thenReturn(Mono.just(creditCard));
+        when(creditCardRepository.save(any(CreditCard.class))).thenReturn(Mono.just(creditCard));
+
+        Mono<ExpenseResponse> result = creditCardService.paymentByCardId(cardId, expenseRequest);
+
+        StepVerifier.create(result)
+                .expectNextMatches(response -> response.getAmount() == 100.0)
+                .verifyComplete();
+
+        verify(creditCardRepository).findById(cardId);
+        verify(creditCardRepository).save(any(CreditCard.class));
+    }
+
+    @Test
+    void testPaymentByCardIdCreditNotFound() {
+        String cardId = "123";
+        ExpenseRequest expenseRequest = new ExpenseRequest("client1", 100.0, "Test payment");
+
+        when(creditCardRepository.findById(cardId)).thenReturn(Mono.empty());
+
+        Mono<ExpenseResponse> result = creditCardService.paymentByCardId(cardId, expenseRequest);
+
+        StepVerifier.create(result)
+                .expectError(Exception.class)
+                .verify();
+
+        verify(creditCardRepository).findById(cardId);
+    }
+
+    @Test
+    void testPaymentByCardIdExceedsCreditLimit() {
+        String cardId = "123";
+        ExpenseRequest expenseRequest = new ExpenseRequest("client1", 400.0, "Test payment");
+        CreditCard creditCard = new CreditCard();
+        creditCard.setAvailableBalance(200.0);
+        creditCard.setCreditLimit(500.0);
+
+        when(creditCardRepository.findById(cardId)).thenReturn(Mono.just(creditCard));
+
+        Mono<ExpenseResponse> result = creditCardService.paymentByCardId(cardId, expenseRequest);
+
+        StepVerifier.create(result)
+                .expectError(Exception.class)
+                .verify();
+
+        verify(creditCardRepository).findById(cardId);
     }
 }

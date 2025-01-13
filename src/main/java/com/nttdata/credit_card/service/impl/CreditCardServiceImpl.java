@@ -14,6 +14,8 @@ import com.nttdata.credit_card.util.BalanceConverter;
 import com.nttdata.credit_card.util.CreditCardConverter;
 import com.nttdata.credit_card.util.ExpenseConverter;
 import com.nttdata.credit_card.util.TransactionConverter;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,8 @@ public class CreditCardServiceImpl implements CreditCardService {
      * @return a flux of credit card responses.
      */
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackGetAllCreditCards")
+    @TimeLimiter(name = "credit-card")
     public Flux<CreditCardResponse> getAllCreditCards() {
         log.info("Fetching all Credit cards");
         return creditCardRepository.findAll()
@@ -51,6 +55,8 @@ public class CreditCardServiceImpl implements CreditCardService {
      * @return a credit card response.
      */
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackGetCreditCardById")
+    @TimeLimiter(name = "credit-card")
     public Mono<CreditCardResponse> getCreditCardById(String idCredit) {
         log.debug("Fetching Credit cards with id: {}", idCredit);
         return creditCardRepository.findById(idCredit)
@@ -65,10 +71,16 @@ public class CreditCardServiceImpl implements CreditCardService {
      * @return a credit card response.
      */
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackCreateNewCreditCard")
+    @TimeLimiter(name = "credit-card")
     public Mono<CreditCardResponse> createNewCreditCard(CreditCardRequest creditCardRequest) {
         if (creditCardRequest == null ) {
             log.warn("Invalid Credit cards data: {}", creditCardRequest);
             return Mono.error(new InvalidCreditDataException("Invalid Credit cards data"));
+        }
+        Mono<CreditCard> creditCardMono = creditCardRepository.findByNumberCreditCard(creditCardRequest.getNumberCreditCard());
+        if (creditCardMono != null) {
+            return Mono.error(new InvalidCreditDataException("The Credit Card Number existing"));
         }
         log.info("Creating new Credit cards: {}", creditCardRequest.getType().name());
         CreditCard creditCard = CreditCardConverter.toCreditCard(creditCardRequest);
@@ -85,6 +97,8 @@ public class CreditCardServiceImpl implements CreditCardService {
      * @return a credit card response.
      */
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackUpdateCreditCard")
+    @TimeLimiter(name = "credit-card")
     public Mono<CreditCardResponse> updateCreditCard(String id, CreditCardRequest creditCardRequest) {
         if (creditCardRequest == null ) {
             log.warn("Invalid Credit cards data for update: {}", creditCardRequest);
@@ -108,6 +122,8 @@ public class CreditCardServiceImpl implements CreditCardService {
      * @return a void Mono.
      */
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackDeleteCreditCard")
+    @TimeLimiter(name = "credit-card")
     public Mono<Void> deleteCreditCard(String id) {
         log.debug("Deleting Credit cards with id: {}", id);
         return creditCardRepository.findById(id)
@@ -117,6 +133,8 @@ public class CreditCardServiceImpl implements CreditCardService {
     }
 
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackChargeByCardId")
+    @TimeLimiter(name = "credit-card")
     public Mono<ExpenseResponse> chargeByCardId(String id, ExpenseRequest expenseRequest) {
         return creditCardRepository.findById(id)
                 .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
@@ -136,6 +154,8 @@ public class CreditCardServiceImpl implements CreditCardService {
     }
 
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackPaymentByCardId")
+    @TimeLimiter(name = "credit-card")
     public Mono<ExpenseResponse> paymentByCardId(String id, ExpenseRequest expenseRequest) {
         return creditCardRepository.findById(id)
                 .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
@@ -155,6 +175,8 @@ public class CreditCardServiceImpl implements CreditCardService {
     }
 
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackGetBalanceByClientId")
+    @TimeLimiter(name = "credit-card")
     public Flux<BalanceResponse> getBalanceByClientId(String idClient) {
         return creditCardRepository.findByClientId(idClient)
                 .map(creditCard -> {
@@ -168,6 +190,8 @@ public class CreditCardServiceImpl implements CreditCardService {
                 .onErrorMap(e -> new Exception("Error getting balance for Credit card", e));
     }
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackGetTransactionByCreditCard")
+    @TimeLimiter(name = "credit-card")
     public Mono<TransactionCreditCardResponse> getTransactionByCreditCard(String idAccount) {
         return creditCardRepository.findById(idAccount).map(TransactionConverter::toTransactionAccountResponse)
                 .switchIfEmpty(Mono.error(new CreditNotFoundException("account not found with id: " + idAccount)))
@@ -176,6 +200,8 @@ public class CreditCardServiceImpl implements CreditCardService {
     }
 
     @Override
+    @CircuitBreaker(name = "credit-card", fallbackMethod = "fallbackGetAllCreditCardByClientId")
+    @TimeLimiter(name = "credit-card")
     public Flux<CreditCardResponse> getAllCreditCardByClientId(String clientId) {
         return creditCardRepository.findByClientId(clientId).map(CreditCardConverter::toCreditCardResponse)
                 .switchIfEmpty(Mono.error(new CreditNotFoundException("account not found with client id: " + clientId)))
@@ -192,5 +218,54 @@ public class CreditCardServiceImpl implements CreditCardService {
             creditCard.getTransactions().add(transactionToConverter);
             return TransactionConverter.toTransactionResponse(transactionToConverter);
         });
+    }
+    public Flux<CreditCardResponse> fallbackGetAllCreditCards(Exception exception) {
+        log.error("Fallback method for getAllCreditCards", exception);
+        return Flux.error(new Exception("Fallback method for getAllCreditCards"));
+    }
+
+    public Mono<CreditCardResponse> fallbackGetCreditCardById(Exception exception) {
+        log.error("Fallback method for getCreditCardById", exception);
+        return Mono.error(new Exception("Fallback method for getCreditCardById"));
+    }
+
+    public Mono<CreditCardResponse> fallbackCreateNewCreditCard(Exception exception) {
+        log.error("Fallback method for createNewCreditCard", exception);
+        return Mono.error(new Exception("Fallback method for createNewCreditCard"));
+    }
+
+    public Mono<CreditCardResponse> fallbackUpdateCreditCard(Exception exception) {
+        log.error("Fallback method for updateCreditCard", exception);
+        return Mono.error(new Exception("Fallback method for updateCreditCard"));
+    }
+
+    public Mono<Void> fallbackDeleteCreditCard(Exception exception) {
+        log.error("Fallback method for deleteCreditCard", exception);
+        return Mono.error(new Exception("Fallback method for deleteCreditCard"));
+    }
+
+    public Mono<ExpenseResponse> fallbackChargeByCardId(Exception exception) {
+        log.error("Fallback method for chargeByCardId", exception);
+        return Mono.error(new Exception("Fallback method for chargeByCardId"));
+    }
+
+    public Mono<ExpenseResponse> fallbackPaymentByCardId(Exception exception) {
+        log.error("Fallback method for paymentByCardId", exception);
+        return Mono.error(new Exception("Fallback method for paymentByCardId"));
+    }
+
+    public Flux<BalanceResponse> fallbackGetBalanceByClientId(Exception exception) {
+        log.error("Fallback method for getBalanceByClientId", exception);
+        return Flux.error(new Exception("Fallback method for getBalanceByClientId"));
+    }
+
+    public Flux<CreditCardResponse> fallbackGetAllCreditCardByClientId(Exception exception) {
+        log.error("Fallback method for getAllCreditCardByClientId", exception);
+        return Flux.error(new Exception("Fallback method for getAllCreditCardByClientId"));
+    }
+
+    public Mono<TransactionCreditCardResponse> fallbackGetTransactionByCreditCard(Exception exception) {
+        log.error("Fallback method for getTransactionByCreditCard", exception);
+        return Mono.error(new Exception("Fallback method for getTransactionByCreditCard"));
     }
 }
