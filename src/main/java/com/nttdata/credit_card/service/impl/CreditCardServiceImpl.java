@@ -16,8 +16,8 @@ import com.nttdata.credit_card.util.ExpenseConverter;
 import com.nttdata.credit_card.util.TransactionConverter;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,14 +25,16 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static com.nttdata.credit_card.util.constats.ConstantsMessage.CREDIT_NOT_FOUND;
+
 /**
  * Implementation of the credit card service.
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CreditCardServiceImpl implements CreditCardService {
-    @Autowired
-    private CreditCardRepository creditCardRepository;
+    private final CreditCardRepository creditCardRepository;
 
     /**
      * Retrieves all credit cards.
@@ -61,7 +63,7 @@ public class CreditCardServiceImpl implements CreditCardService {
         log.debug("Fetching Credit cards with id: {}", idCredit);
         return creditCardRepository.findById(idCredit)
                 .map(CreditCardConverter::toCreditCardResponse)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + idCredit)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + idCredit)))
                 .onErrorMap(e -> new Exception("Error fetching Credit cards by id", e));
     }
     /**
@@ -106,7 +108,7 @@ public class CreditCardServiceImpl implements CreditCardService {
         }
         log.debug("Updating Credit cards with id: {}", id);
         return creditCardRepository.findById(id)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + id)))
                 .flatMap(existingClient -> {
                     CreditCard updateCreditCard = CreditCardConverter.toCreditCard(creditCardRequest);
                     updateCreditCard.setId(existingClient.getId());
@@ -127,7 +129,7 @@ public class CreditCardServiceImpl implements CreditCardService {
     public Mono<Void> deleteCreditCard(String id) {
         log.debug("Deleting Credit cards with id: {}", id);
         return creditCardRepository.findById(id)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + id)))
                 .flatMap(existingClient -> creditCardRepository.delete(existingClient))
                 .onErrorMap(e -> new Exception("Error deleting Credit cards", e));
     }
@@ -137,7 +139,7 @@ public class CreditCardServiceImpl implements CreditCardService {
     @TimeLimiter(name = "credit-card")
     public Mono<ExpenseResponse> chargeByCardId(String id, ExpenseRequest expenseRequest) {
         return creditCardRepository.findById(id)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + id)))
                 .flatMap(creditCard -> {
                     double newBalance = creditCard.getAvailableBalance() - expenseRequest.getAmount();
                     if (newBalance < 0) {
@@ -158,7 +160,7 @@ public class CreditCardServiceImpl implements CreditCardService {
     @TimeLimiter(name = "credit-card")
     public Mono<ExpenseResponse> paymentByCardId(String id, ExpenseRequest expenseRequest) {
         return creditCardRepository.findById(id)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit cards not found with id: " + id)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + id)))
                 .flatMap(creditCard -> {
                     double newBalance = creditCard.getAvailableBalance() + expenseRequest.getAmount();
                     if (newBalance > creditCard.getCreditLimit()) {
