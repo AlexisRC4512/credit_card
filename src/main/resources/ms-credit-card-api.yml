@@ -54,12 +54,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/creditCard/{id_card}:
+  /v1/creditCard/{idCard}:
     get:
       summary: Get a credit card by ID
       operationId: getCardById
       parameters:
-        - name: id_card
+        - name: idCard
           in: path
           required: true
           description: Id of credit Card
@@ -88,7 +88,7 @@ paths:
       summary: Update a credit card by ID
       operationId: updateCard
       parameters:
-        - name: id_card
+        - name: idCard
           in: path
           required: true
           description: Id of credit Card
@@ -129,7 +129,7 @@ paths:
       summary: Delete a credit card by ID
       operationId: deleteCard
       parameters:
-        - name: id_card
+        - name: idCard
           in: path
           description: Id of credit Card
           required: true
@@ -150,12 +150,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/creditCard/{id_card}/charge:
+  /v1/creditCard/{idCard}/charge:
     post:
       summary: Charge an expense to the credit card
       operationId: chargeExpense
       parameters:
-        - name: id_card
+        - name: idCard
           in: path
           required: true
           description: Id of credit Card
@@ -186,12 +186,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/creditCard/{id_client}/balances:
+  /v1/creditCard/{idClient}/balances:
     get:
       summary: Get client balances
       operationId: getClientBalances
       parameters:
-        - name: id_client
+        - name: idClient
           in: path
           required: true
           schema:
@@ -215,12 +215,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/creditCard/{id_card}/transactions:
+  /v1/creditCard/{idAccount}/transactions:
     get:
       summary: Get client transactions
       operationId: getClientTransactions
       parameters:
-        - name: id_card
+        - name: idAccount
           in: path
           required: true
           schema:
@@ -244,12 +244,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/creditCard/{id_card}/payment:
+  /v1/creditCard/{idClient}/payment:
     post:
       summary: Credit Card Payment
       operationId: postTransactions
       parameters:
-        - name: id_card
+        - name: idClient
           in: path
           required: true
           schema:
@@ -279,12 +279,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/creditCard/{id_client}/client:
+  /v1/creditCard/{idClient}/client:
     get:
       summary: Get a credit card by ID client
       operationId: getCardByClientId
       parameters:
-        - name: id_client
+        - name: idClient
           in: path
           required: true
           description: Id of client
