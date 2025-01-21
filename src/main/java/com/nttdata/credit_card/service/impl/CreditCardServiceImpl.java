@@ -80,10 +80,6 @@ public class CreditCardServiceImpl implements CreditCardService {
             log.warn("Invalid Credit cards data: {}", creditCardRequest);
             return Mono.error(new InvalidCreditDataException("Invalid Credit cards data"));
         }
-        Mono<CreditCard> creditCardMono = creditCardRepository.findByNumberCreditCard(creditCardRequest.getNumberCreditCard());
-        if (creditCardMono != null) {
-            return Mono.error(new InvalidCreditDataException("The Credit Card Number existing"));
-        }
         log.info("Creating new Credit cards: {}", creditCardRequest.getType().name());
         CreditCard creditCard = CreditCardConverter.toCreditCard(creditCardRequest);
         return creditCardRepository.save(creditCard)
